@@ -348,7 +348,7 @@ class ExistenceCheck:
 
 def main():
     campuspath = "/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/InCampusPersonnel.csv"
-    newadpath = "/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/Export_1108/Export_1108.csv"
+    newadpath = input("Parse your newly admitted student list file FULL PATH here:\n")
 
     ExistenceCheck(campuspath, newadpath)
 
