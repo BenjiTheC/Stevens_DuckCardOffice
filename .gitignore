@@ -1,3 +1,12 @@
+# all of the data file ignored, CUSTOMIZED
+*.csv
+*.xlsx
+
+
+
+
+# Automated ignore Python parts below
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
