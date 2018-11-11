@@ -1,7 +1,8 @@
 # all of the data file ignored, CUSTOMIZED
 *.csv
 *.xlsx
-
+*.db
+.vscode/
 
 
 
