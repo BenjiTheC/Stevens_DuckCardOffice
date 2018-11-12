@@ -347,7 +347,7 @@ class ExistenceCheck:
             return "undated"
 
 def main():
-    campuspath = "/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/InCampusPersonnel.csv"
+    campuspath = "./InCampusPersonnel.csv"
     newadpath = input("Parse your newly admitted student list file FULL PATH here:\n")
 
     ExistenceCheck(campuspath, newadpath)
