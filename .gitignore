@@ -3,7 +3,7 @@
 *.xlsx
 *.db
 .vscode/
-
+*.txt
 
 
 # Automated ignore Python parts below
