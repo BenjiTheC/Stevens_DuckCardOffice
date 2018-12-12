@@ -159,7 +159,7 @@ class ExistenceCheck:
             self._exported_date = self._extract_date()
 
             # cerate the connection to database:
-            self._connection = sqlite3.connect(":memory:")
+            self._connection = sqlite3.connect('test_spring_bb.db')            # ":memory:"
 
             self._build_reference()
             self._find_brnsuscon()
@@ -297,7 +297,13 @@ class ExistenceCheck:
                         on newad.First = cp.First
                         and newad.Last = cp.Last
                         and not (cp.Middle != newad.Middle and cp.Middle != '' and newad.Middle != '')
-                      where cp.CWID != newad.CWID"""
+                      where cp.CWID != newad.CWID
+                        and newad.CWID not in (
+                            select distinct newad.CWID
+                            from newad newad
+                            join campus cp
+                            on newad.CWID = cp.CWID
+                            )"""
 
         with open(f'sus_{self._exported_date}.csv', 'w') as fwrite:
             fwrite.write(f"CWID,First,Middle,Last\n")
@@ -305,7 +311,7 @@ class ExistenceCheck:
             for cwid, first, middle, last in sus.execute(find_sus):
                 print(f"writing\t{cwid}, {first}, {middle}, {last}\tinto the file.")
                 fwrite.write(f"{cwid},{first},{middle},{last}\n")
-        
+
       # find and write brandnew
         brn = connection.cursor()
         find_brn = """select distinct raw.CWID, raw.First, raw.Middle, raw.Last
@@ -347,11 +353,10 @@ class ExistenceCheck:
             return "undated"
 
 def main():
-    campuspath = "./InCampusPersonnel.csv"
-    newadpath = input("Parse your newly admitted student list file FULL PATH here:\n")
+    campuspath = os.path.join(os.curdir, 'InCampusPersonnel', 'InCampusPersonnel.csv')
+    newadpath = '/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/Export_1210/Export_1210.csv'    #input("Parse your file name:\n")
 
-    ExistenceCheck(campuspath, newadpath)
+    ExistenceCheck(campuspath, newadpath)   #os.path.join(os.curdir, newadpath, newadpath + '.csv')
 
 if __name__ == "__main__":
     main()
-

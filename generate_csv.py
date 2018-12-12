@@ -29,7 +29,7 @@ def readfile(filepath):
 
 def writefile(info_dct: dict):
     
-    with open('login_try.csv', 'w') as fwrite:
+    with open('login_try_1210.csv', 'w') as fwrite:
 
         fwrite.write(f'cwid,username\n')
         for cwid, username in info_dct.items():
@@ -40,7 +40,7 @@ def writefile(info_dct: dict):
             print('writing finish')
 
 def main():
-    filepath = '/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/login_attempt.txt'
+    filepath = '/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/login_attempt_1210.txt'
     info_dct = readfile(filepath)
     writefile(info_dct)
 

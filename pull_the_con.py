@@ -18,9 +18,10 @@ Here is how this script will work:
 import os
 import sys
 import re
+import datetime
 from read_file import file_reading_gen
 
-def traverse_dir(dir_path=os.curdir, pattern=r'^Export_([\d]{4})'):
+def traverse_dir(dir_path=os.curdir, pattern=r'^Export_([\d]{4})', give_span=False):
     """ 
     given a directory path, traverse and find the naem with pattern included
     by default searching for current directory and patter as r'Export_([\d]{4})'
@@ -33,7 +34,7 @@ def traverse_dir(dir_path=os.curdir, pattern=r'^Export_([\d]{4})'):
     dir_list = os.listdir(dir_path)
 
     for file_ in dir_list:
-        if re.search(pattern, file_) and os.path.isdir(file_):           # it's a directory and the one we are finding
+        if re.search(pattern, file_) and os.path.isdir(file_) and re.search(pattern, file_).group(1):           # it's a directory and the one we are finding
             lst_to_write.extend(dive_and_find(file_))
     
     return lst_to_write
@@ -71,8 +72,8 @@ def wirte_file(lst_to_wrtie):
         
         for row in lst_to_wrtie:
             fwrite.write(','.join(row)+'\n')
-        else:
-            print('\nwriting complete\n')
+        
+        print('\nwriting complete\n')
 
 def main():
     """ Entrance of program"""

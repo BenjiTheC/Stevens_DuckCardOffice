@@ -55,17 +55,17 @@ def check_exist(cmpr: list, base: list, item_name='CWID'):
 
 
 def main():
-    base_file = "/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/InCampusPersonnel_1130.csv"
+    base_file = os.path.join(os.curdir, 'InCampusPersonnel', "InCampusPersonnel_1207.csv")
     compare_file = "/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/Export_1129/brn_1129.csv"
 
-    login_attempt = '/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/login_try.csv'
+    login_attempt = '/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/login_try_1210.csv'
 
     base_lst = list(csv_yield_one_field(base_file, 6, header= True))
     cmpr_lst = list(csv_yield_one_field(compare_file, 6, header= True))
 
-    #loga_lst = list(csv_yield_one_field(login_attempt, 2, header= True))
+    loga_lst = list(csv_yield_one_field(login_attempt, 2, header= True))
 
-    check_exist(cmpr_lst, base_lst)
+    check_exist(loga_lst, base_lst)
 
 if __name__ == "__main__":
     main()
