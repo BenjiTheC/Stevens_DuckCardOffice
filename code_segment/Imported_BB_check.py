@@ -5,12 +5,10 @@ double check if the brn_[exporteddate] students are successfully imported
 """
 
 import os
-import sys
 
 def csv_yield_one_field(filepath, fields: int, sep=',', header=False, field_to_yield=0):
     """
-    Generator
-    ================================================================================
+    Generator:\n
     Only read the first field in a separated value file
     yield it
     """
@@ -46,26 +44,26 @@ def check_exist(cmpr: list, base: list, item_name='CWID'):
         if item not in base:
             not_in_base.append(item)
             print(f"{item_name} {item} is NOT in the base data.")
-    
-    else:
-        print(f'check {len(cmpr)} CWIDs, {len(not_in_base)} are not in the base')
+
+    print(f'check {len(cmpr)} CWIDs, {len(not_in_base)} are not in the base')
     
     if not not_in_base:
         print(f"All of the {item_name} in cmpr are in the base.")
 
 
 def main():
-    base_file = os.path.join(os.curdir, 'InCampusPersonnel', "InCampusPersonnel_1207.csv")
-    compare_file = "/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/Export_1129/brn_1129.csv"
+    """ Entrance"""
+    base_file = '/Users/benjamin/Documents/Campus_Card_Office/DuckCard_data/InCampusPersonnel/InCampusPersonnel_181212.csv'
+    compare_file = "/Users/benjamin/Desktop/student_to_import_1207.csv"
 
-    login_attempt = '/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/login_try_1210.csv'
+    #login_attempt = '/Users/benjamin/Documents/Campus_Card_Office/Stevens_DuckCardOffice/login_try_1210.csv'
 
-    base_lst = list(csv_yield_one_field(base_file, 6, header= True))
-    cmpr_lst = list(csv_yield_one_field(compare_file, 6, header= True))
+    base_lst = list(csv_yield_one_field(base_file, 6, header=True))
+    cmpr_lst = list(csv_yield_one_field(compare_file, 6, header=True))
 
-    loga_lst = list(csv_yield_one_field(login_attempt, 2, header= True))
+    #loga_lst = list(csv_yield_one_field(login_attempt, 2, header=True))
 
-    check_exist(loga_lst, base_lst)
+    check_exist(cmpr_lst, base_lst)
 
 if __name__ == "__main__":
     main()

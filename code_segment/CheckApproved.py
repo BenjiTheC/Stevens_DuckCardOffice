@@ -2,27 +2,8 @@
 Everyday we will receive a .csv file of the report of how many photos we 
 have approved/rejected/pending. 
 build a database to check and update the data of every individual's photo
-
-- Database: SQLite
-- Process:
-  - build the very first reference with first recieved file
-      1. CREATE TABLE ref(
-          CWID TEXT PRIMARY KEY
-          first TEXT
-          middle TEXT
-          last TEXT
-          status TEXT
-      )
-  - for each newly received file, initialize a table, doing the following 
-    operation:
-      1.students already in the database
-        SELCET r.cwid, r.status, n.status
-        FROM ref as r
-        JOIN new as n
-        ON r.cwid = n.cwid
 """
 
-import sys
 import os
 import sqlite3
 from datetime import datetime
@@ -48,7 +29,7 @@ class CheckApprove:
       - operation date: date received the file
     """
 
-    def __init__(self, date, db_file=os.path.join(curdir, 'photo_admin', 'photo_admin.db')):
+    def __init__(self, date, db_file='/Users/benjamin/Documents/Campus_Card_Office/DuckCard_data/photoAdmin/photo_admin.db'):
         """
         - build reference at the first time we run it
         - check and update data every time we has a file
@@ -82,7 +63,7 @@ class CheckApprove:
         connection = sqlite3.connect(self._db_file)
         ref = connection.cursor()
 
-      # build the table as prime reference
+        # build the table as prime reference
         Query_tbl = \
         """
         CREATE TABLE IF NOT EXISTS reference
@@ -111,7 +92,7 @@ class CheckApprove:
                 - NO : add them in the database
         """
 
-        connection = sqlite3.connect(self._db_file)
+        connection = sqlite3.connect(self._db_file) 
         update = connection.cursor()
 
         Query_sle = \
@@ -135,27 +116,27 @@ class CheckApprove:
         """
 
         for cwid, first, last, status, submitdate, email, uggr \
-            in file_reading_gen(os.path.join(curdir, 'photo_admin', f'photo_upload_admin_{self._date}.csv'), 7):
+            in file_reading_gen(f'/Users/benjamin/Documents/Campus_Card_Office/DuckCard_data/photoAdmin/receivedJSA/photo_upload_admin_{self._date}.csv', 7):
             
             try:
                 record = list(update.execute(Query_sle, (cwid, )))[0]          # Cursor is a generator object, not a list.
             except IndexError:
                 record = list(update.execute(Query_sle, (cwid, )))
+            # record = [cwid, first, last, status, submitdate, operation_date]
             
             status = self.status(status)
 
             # new record
             if not record:
-                #print(f'write new record: {cwid}, {first} {last}, status: {status}, date:{self._date}.')
+                
                 data = (cwid, first, last, status, submitdate, self._date)
                 update.execute(Query_ins, data)
 
-            # record need to be updated
-            # record = [cwid, first, last, status, submitdate, operation_date]
+            # existed record but has a status change
             # format of SubmitDate: mm/dd/yy hh:mm --> %m/%d/%y %H:%M
-            elif record and status != record[3] and datetime.strptime(record[4], '%Y-%m-%d %H:%M:%S') <= datetime.strptime(submitdate, '%Y-%m-%d %H:%M:%S'): 
-                #print(f'update existed record: {cwid}, {first} {last}', f'{str():>12}',\
-                #f'status: {record[3]} --> {status}, submitdate: {record[4]} --> {submitdate}, date: {record[5] if not self._first_time else str(1203)} --> {self._date}')
+            elif record and status != record[3] \
+                and datetime.strptime(record[4], '%Y-%m-%d %H:%M:%S') <= datetime.strptime(submitdate, '%Y-%m-%d %H:%M:%S'): 
+                
                 data = (status, submitdate, self._date, cwid)
                 update.execute(Query_upd, data)
 
@@ -166,7 +147,7 @@ class CheckApprove:
 
         connection.close()
 
-    def write_file(self, wanted_status):
+    def write_file(self, wanted_status='approved'):
         """
         - pull out the data from database
         - only approved photos' data
@@ -185,7 +166,7 @@ class CheckApprove:
         data = (wanted_status, self._date)
         
         if list(pull.execute(Query_sle, data)):
-            with open(os.path.join(curdir, 'photo_admin', f'approved_{self._date}.csv'), 'w') as fwrite:
+            with open(f'/Users/benjamin/Documents/Campus_Card_Office/DuckCard_data/photoAdmin/toPrint/approved_{self._date}.csv', 'w') as fwrite:
                 fwrite.write('CWID,First,Last,Date\n')
 
 
@@ -196,10 +177,7 @@ class CheckApprove:
 
 def main():
     """ Entrance"""
-    wanted_status = 'approved'
-
-    for date in ('1204', '1205', '1206', '1210'):
-        CheckApprove(date).write_file(wanted_status)
+    CheckApprove('1212').write_file()
     
 
 if __name__ == "__main__":

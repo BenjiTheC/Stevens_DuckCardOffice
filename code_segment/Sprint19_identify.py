@@ -1,13 +1,4 @@
-"""
-Given a Excel file from Slate, recognized if each of the student is in the BlackBoard Excersice.
-
-Process:
-- Received the Excel file, save as .csv.
-- Eliminate whitespace in the 'First' column, make 'First', 'Middle', 'Last' uppercase.
-- Build a table in the database for the particular file.
-- Cross check the database to separate students in the file into 
-    Brand_New_[exportdate].csv, Continuing[exportdate], Suspect[exportdate]
-"""
+""" distinguish error prone information from received Slate report"""
 
 import os
 import sqlite3
@@ -35,18 +26,24 @@ def is_file(filepath):
     else:
         raise OSError(f"{filepath} is NOT a file!")
 
+
 class ExistenceCheck:
     """ Distinguish error prone information in newly admitted students data 
 
-        Input:
-        Two .csv files. 
-        One as reference of all the in-campus personnel, another as the new students need to be identified.
+        Input: 2 .csv files. 
+        - InCampusPersonnel.csv: reference of all the in-campus personnel.
+        - Export_[exported_date]: the new students need to be identified.
 
-        Output:
-        Three .csv files.
+        Output: 3 .csv files.
         - brn_[exported_date]: confirmed brand new students' info. Send this to IT/GradAdm.
         - con_[exported_date]: confirmed continuing students' info. Update their UG/GR and ExitDate.
         - sus_[exported_date]: uncertain students who may be brand new or continuing, check with Ms. Edge.
+
+        Process:
+        - Received the Excel file, save as .csv.
+        - Eliminate whitespace in the 'First' column, make 'First', 'Middle', 'Last' uppercase.
+        - Build a table in the database for the particular file.
+        - Cross check the database to separate students in the file into
     """
 
     def __init__(self, campus_path, newad_path, in_memory=True):
@@ -115,11 +112,11 @@ class ExistenceCheck:
         
         query_upd_campus = """ UPDATE campus SET Middle = '' WHERE Middle = '{NULL}'"""
 
-        query_add_newad  = """ INSERT INTO newad (CWID, First, Middle, Last)
-                               VALUES (?, ?, ?, ?);"""
+        query_add_newad = """ INSERT INTO newad (CWID, First, Middle, Last)
+                              VALUES (?, ?, ?, ?);"""
 
-        query_add_raw    = """ INSERT INTO raw_newad (CWID, First, Middle, Last)
-                               VALUES (?, ?, ?, ?);"""
+        query_add_raw = """ INSERT INTO raw_newad (CWID, First, Middle, Last)
+                            VALUES (?, ?, ?, ?);"""
 
         # insert into campus
         for data in self._campus_modify():
@@ -168,54 +165,60 @@ class ExistenceCheck:
         
         cursor = self._connection.cursor()
 
-        find_con = """ select distinct newad.CWID, newad.First, newad.Middle, newad.Last
-                       from newad newad
-                       join campus cp
-                         on newad.CWID = cp.CWID"""
+        find_con =\
+            """ select distinct newad.CWID, newad.First, newad.Middle, newad.Last
+                from newad newad
+                join campus cp
+                  on newad.CWID = cp.CWID
+            """
 
 
-        find_sus = """select distinct newad.CWID, newad.First, newad.Middle, newad.Last  
-                      from  newad newad
-                      join campus cp
+        find_sus =\
+            """ select distinct newad.CWID, newad.First, newad.Middle, newad.Last  
+                from newad newad
+                join campus cp
+                  on newad.First = cp.First
+                  and newad.Last = cp.Last
+                  and not (cp.Middle != newad.Middle and cp.Middle != '' and newad.Middle != '')
+                where cp.CWID != newad.CWID
+                  and newad.CWID not in (
+                    select distinct newad.CWID
+                    from newad newad
+                    join campus cp
+                    on newad.CWID = cp.CWID
+                    )
+            """
+
+        find_brn =\
+            """ select distinct raw.CWID, raw.First, raw.Middle, raw.Last
+                from raw_newad raw
+                where raw.CWID not in
+                (
+                
+                    select distinct newad.CWID
+                    from newad newad
+                    join campus cp
                         on newad.First = cp.First
                         and newad.Last = cp.Last
                         and not (cp.Middle != newad.Middle and cp.Middle != '' and newad.Middle != '')
-                      where cp.CWID != newad.CWID
-                        and newad.CWID not in (
-                            select distinct newad.CWID
-                            from newad newad
-                            join campus cp
-                            on newad.CWID = cp.CWID
-                            )"""
-
-        find_brn = """ select distinct raw.CWID, raw.First, raw.Middle, raw.Last
-                    from raw_newad raw
-                    where raw.CWID not in
-                    (
-                    
+                    where cp.CWID != newad.CWID
+                      and newad.CWID not in (
                         select distinct newad.CWID
                         from newad newad
                         join campus cp
-                            on newad.First = cp.First
-                            and newad.Last = cp.Last
-                            and not (cp.Middle != newad.Middle and cp.Middle != '' and newad.Middle != '')
-                        where cp.CWID != newad.CWID
-                          and newad.CWID not in (
-                            select distinct newad.CWID
-                            from newad newad
-                            join campus cp
-                            on newad.CWID = cp.CWID
-                            )
+                          on newad.CWID = cp.CWID
+                    )
 
-                        union
+                    union
 
-                    
-                        select distinct newad.CWID
-                        from newad newad
-                        join campus cp
-                            on newad.CWID = cp.CWID
+                
+                    select distinct newad.CWID
+                    from newad newad
+                    join campus cp
+                      on newad.CWID = cp.CWID
 
-                    )"""
+                )
+            """
 
         if list(cursor.execute(find_con)):
 
@@ -227,6 +230,7 @@ class ExistenceCheck:
 
         else:
             print('No continuing student.')
+
 
         if list(cursor.execute(find_sus)):
         
@@ -240,10 +244,11 @@ class ExistenceCheck:
         else:
             print('No suspect student.')
         
+
         with open(os.path.join(BRN, f'brn_{self._exported_date}.csv'), 'w') as fwrite:
-            uggr = 'GR'
-            exdate = '12/31/2022'
             fwrite.write(f"CWID,First,Middle,Last,UG/GR,ExitDate\n")
+            
+            uggr, exdate = 'GR', '12/31/2022'
 
             for cwid, first, middle, last in cursor.execute(find_brn):
                 fwrite.write(f"{cwid},{first},{middle},{last},{uggr},{exdate}\n")
@@ -259,7 +264,7 @@ class ExistenceCheck:
 def main():
     """ Entrance"""
     campuspath = os.path.join(IN_CAMPUS_PERSONNEL, 'InCampusPersonnel.csv')
-    newadpath =  os.path.join(RAW_EXPORT, input('parse your file name: ') + '.csv')
+    newadpath = os.path.join(RAW_EXPORT, input('parse your file name: ') + '.csv')
 
     ExistenceCheck(campuspath, newadpath)   #os.path.join(os.curdir, newadpath, newadpath + '.csv')
 
