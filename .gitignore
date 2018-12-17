@@ -4,6 +4,7 @@
 *.db
 .vscode/
 *.txt
+duckcard_venv/
 
 
 # Automated ignore Python parts below

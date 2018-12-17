@@ -31,7 +31,7 @@ def to_upper(s: str):
     """ Return the upper case version of the first part of given string splited by white space"""
     return s.strip().split(' ')[0].upper()
 
-def get_status(status_string: str):
+def get_status(status_string: str):  # TODO: the new status 'printed' to be added
     """return the status from the long string"""
     status_tup = ('approved', 'pending', 'rejected')
     for status in status_tup:
@@ -302,14 +302,15 @@ def main():
 
     slate = Slate(SLATE, db)
     slate.insert_data(first_time=True)
-    slate.print_count()
 
     bb = Blackboard(BLACKBOARD, db)
-    #bb.insert_data(first_time=True)
-    bb.print_count()
+    bb.insert_data(first_time=True)
 
     jsa = JSA(JSA_, db)
     jsa.insert_data(first_time=True)
+
+    bb.print_count()
+    slate.print_count()
     jsa.print_count()
 
 

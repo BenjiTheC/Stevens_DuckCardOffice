@@ -1,11 +1,11 @@
 """ Store some frequently used SQL"""
 
 #import os
-import sqlite3
+#import sqlite3
 
 class Query:
     """ Store some frequently used SQL"""
-
+   # stevens_system.py
     create_slate =\
         """ CREATE TABLE IF NOT EXISTS Slate
             (
@@ -109,15 +109,94 @@ class Query:
         """ SELECT cwid FROM Blackboard
         """
 
+   # nerdy_ben.py
+    # 1 field: Slate received_date
+    find_con =\
+        """ SELECT sla.cwid, sla.raw_first, sla.raw_middle, sla.raw_last
+            FROM Slate as sla 
+            JOIN Blackboard as bb
+              ON sla.cwid = bb.cwid
+            WHERE bb.received_date = '181111' 
+              AND sla.received_date = ?;
+        """
+
+    # 1 field: Slate received_date
+    find_sus =\
+        """ SELECT DISTINCT sla.cwid, sla.raw_first, sla.raw_middle, sla.raw_last
+            FROM Slate AS sla
+            JOIN Blackboard AS bb
+              ON sla.first = bb.first
+              AND sla.last = bb.last 
+              AND NOT (bb.middle != sla.middle and bb.middle != '' and sla.middle != '')
+            WHERE sla.received_date = ?
+              AND sla.cwid != bb.cwid
+              AND sla.cwid NOT IN (
+                SELECT sla.cwid
+                FROM Slate sla
+                JOIN Blackboard bb
+                  ON sla.cwid = bb.cwid
+                WHERE bb.received_date = '181111'
+            );
+        """
+    
+    # 3 fields: Slate received_date * 3
+    find_brn =\
+        """ SELECT DISTINCT cwid, raw_first, raw_middle, raw_last
+            FROM Slate
+            WHERE received_date = ?
+            AND cwid NOT IN (
+
+                SELECT DISTINCT sla.cwid
+                FROM Slate AS sla
+                JOIN Blackboard AS bb
+                ON sla.first = bb.first
+                AND sla.last = bb.last 
+                AND NOT (bb.middle != sla.middle and bb.middle != '' and sla.middle != '')
+                WHERE sla.received_date = ?
+                AND sla.cwid != bb.cwid
+                AND sla.cwid NOT IN (
+                    SELECT sla.cwid
+                    FROM Slate sla
+                    JOIN Blackboard bb
+                    ON sla.cwid = bb.cwid
+                    WHERE bb.received_date = '181111'
+                )
+
+                UNION
+
+                SELECT sla.cwid
+                FROM Slate as sla 
+                JOIN Blackboard as bb
+                ON sla.cwid = bb.cwid
+                WHERE bb.received_date = '181111' 
+                AND sla.received_date = ?
+
+            );
+        """
+
+    cwid_in_bb =\
+        """ SELECT cwid
+            FROM Blackboard
+        """
+    
+    # TODO: below this line are not tested
+    select_status_jsa =\
+        """ SELECT jsa.cwid, jsa.first, jsa.last, jsa.received_date
+        FROM JSA jsa
+        WHERE jsa.received_date = ? 
+          AND jsa.status = ?;
+        """
+
+
 def main():
     """ Test"""
-    query = Query()
-    connection = sqlite3.connect(':memory:')
-    cursor = connection.cursor()
+    #query = Query()
+    #connection = sqlite3.connect(':memory:')
+    #cursor = connection.cursor()
 
-    cursor.execute(query.create_jsa)
-    connection.commit()
-    connection.close()
+    #cursor.execute(query.create_jsa)
+    #connection.commit()
+    #connection.close()
 
 if __name__ == '__main__':
     main()
