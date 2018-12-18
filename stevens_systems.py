@@ -9,12 +9,6 @@ from tabulate import tabulate
 from QueryLib import Query
 from read_file import file_reading_gen
 
-TODAY = datetime.now().strftime('%y%m%d')
-DUCKCARD = os.path.join(os.pardir, 'DuckCard_data')
-SLATE = os.path.join(DUCKCARD, 'Slate')
-BLACKBOARD = os.path.join(DUCKCARD, 'Blackboard')
-JSA_ = os.path.join(DUCKCARD, 'JSA')
-BENJI = os.path.join(DUCKCARD, 'TheBenji')  # I'm being cocky here XD
 
 def find_date(dir_path, date=None):
     """ find the file with the specific date in given dir"""
@@ -165,7 +159,7 @@ class Blackboard(System):
                 continue
             data = (cwid, to_upper(first), to_upper(middle), to_upper(last), first, middle, last, date)
             cursor.execute(Query.insert_bb, data)
-
+        cursor.execute(Query.update_bb)  # clean up the null value
         db_connect.commit()
 
     def insert_data(self, first_time=False, date=None, pattern=r'InCampusPersonnel_([\d]{6})\.csv'):
@@ -253,7 +247,7 @@ class JSA(System):
 
             db_connect.commit()
 
-        cursor.execute(Query.update_bb)  # clean up the null value
+        
         db_connect.commit()
 
     def insert_data(self, first_time=False, date=None, pattern=r'received_jsa_([\d]{6})\.csv'):
@@ -300,17 +294,23 @@ def main():
     """ for test"""
     db = os.path.join(os.curdir, 'duckcard.db')  #os.path.join(DUCKCARD, 'duckcard.db')
 
-    slate = Slate(SLATE, db)
-    slate.insert_data(first_time=True)
+    TODAY = datetime.today().strftime('%y%m%d')
+    DUCKCARD = os.path.join(os.pardir, 'DuckCard_data')
+    SLATE = os.path.join(DUCKCARD, 'Slate')
+    BLACKBOARD = os.path.join(DUCKCARD, 'Blackboard')
+    JSA_ = os.path.join(DUCKCARD, 'JSA')
+
+    sla = Slate(SLATE, db)
+    #sla.insert_data(date=TODAY)  # first_time=True
 
     bb = Blackboard(BLACKBOARD, db)
-    bb.insert_data(first_time=True)
+    #bb.insert_data(date=TODAY)  # first_time=True
 
     jsa = JSA(JSA_, db)
-    jsa.insert_data(first_time=True)
+    #jsa.insert_data(date=TODAY)  # first_time=True
 
     bb.print_count()
-    slate.print_count()
+    sla.print_count()
     jsa.print_count()
 
 

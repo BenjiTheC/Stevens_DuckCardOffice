@@ -32,7 +32,6 @@ def get_one_column(file_path, fields, col, sep=',', header=True):
 
     return res
 
-
 class NerdyBen:
     """ This class contains all the data analysis process needed for the DuckCard office's newly
         incomming students' duckcard printing process
@@ -149,10 +148,10 @@ class NerdyBen:
 def main():
     """ Test"""
     benji = NerdyBen(DATABASE, WRITE_TO)
-    #benji.error_prone_distinguish(date='181108')
+    #benji.error_prone_distinguish(date='181217')
     #benji.to_import(date='181108')
     #benji.doublecheck_imported(date='181108')
-    #benji.to_print(date='181204')
+    #benji.to_print(date='181210')
 
 if __name__ == '__main__':
     main()
