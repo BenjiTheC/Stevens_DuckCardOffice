@@ -17,6 +17,7 @@ class Query:
                 raw_middle TEXT,
                 raw_last TEXT,
                 raw_email TEXT,
+                raw_username TEXT,
                 received_date TEXT
             );
         """
@@ -50,8 +51,8 @@ class Query:
     # 9 args fields
     insert_slate =\
         """ INSERT INTO Slate 
-            (cwid, first, middle, last, raw_first, raw_middle, raw_last, raw_email, received_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (cwid, first, middle, last, raw_first, raw_middle, raw_last, raw_email, raw_username, received_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
 
     # 9 args fields

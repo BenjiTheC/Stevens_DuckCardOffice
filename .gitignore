@@ -5,7 +5,25 @@
 .vscode/
 *.txt
 duckcard_venv/
-
+code_segment/*
+*.pyc
+*.pyo
+__pycache__/
+.idea/
+.ropeproject
+.DS_Store
+env/
+venv/
+*.egg-info/
+*.eggs/
+build/
+dist/
+docs/_build/
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
 
 # Automated ignore Python parts below
 

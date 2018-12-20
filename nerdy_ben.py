@@ -97,9 +97,10 @@ class NerdyBen:
             for cwid, first, middle, last in file_reading_gen(path_brn, 4, header=True):
                 fwrite.write(f'{cwid},{first},{middle},{last},{uggr},{exit_date}\n')
 
-            for cwid, first, middle, last, is19s in file_reading_gen(path_conf, 5, header=True):
-                if status[is19s.upper()]:
-                    fwrite.write(f'{cwid},{first},{middle},{last},{uggr},{exit_date}\n')    
+            if os.path.isfile(path_conf):
+                for cwid, first, middle, last, is19s in file_reading_gen(path_conf, 5, header=True):
+                    if status[is19s.upper()]:
+                        fwrite.write(f'{cwid},{first},{middle},{last},{uggr},{exit_date}\n')    
 
     def doublecheck_imported(self, date=None):
         """ Check if Kristen has imported all students in the .csv file sent to her."""
@@ -148,10 +149,10 @@ class NerdyBen:
 def main():
     """ Test"""
     benji = NerdyBen(DATABASE, WRITE_TO)
-    #benji.error_prone_distinguish(date='181217')
-    #benji.to_import(date='181108')
+    benji.error_prone_distinguish(date='181207')
+    #benji.to_import(date='181217')
     #benji.doublecheck_imported(date='181108')
-    #benji.to_print(date='181210')
+    #benji.to_print(date='181218')
 
 if __name__ == '__main__':
     main()

@@ -89,7 +89,7 @@ class Slate(System):
 
         for cwid, first, middle, last, username, email, dcisionfn, prnd, defer, dcisionln, pchange, special \
         in file_reading_gen(file_path, 12, header=True):
-            data = (cwid, to_upper(first), to_upper(middle), to_upper(last), first, middle, last, email, date if date else 'undated')
+            data = (cwid, to_upper(first), to_upper(middle), to_upper(last), first, middle, last, email, username, date if date else 'undated')
             cursor.execute(Query.insert_slate, data)
             db_connect.commit()
     
@@ -301,17 +301,17 @@ def main():
     JSA_ = os.path.join(DUCKCARD, 'JSA')
 
     sla = Slate(SLATE, db)
-    #sla.insert_data(date=TODAY)  # first_time=True
+    #sla.insert_data(first_time=True)  # date=TODAY
 
     bb = Blackboard(BLACKBOARD, db)
-    #bb.insert_data(date=TODAY)  # first_time=True
+    #bb.insert_data(date=TODAY)  # date=TODAY first_time=True
 
     jsa = JSA(JSA_, db)
-    #jsa.insert_data(date=TODAY)  # first_time=True
+    #jsa.insert_data(first_time=True)  # date=TODAY
 
-    bb.print_count()
+    #bb.print_count()
     sla.print_count()
-    jsa.print_count()
+    #jsa.print_count()
 
 
 if __name__ == '__main__':
