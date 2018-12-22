@@ -48,25 +48,45 @@ class Query:
             );
         """
 
+    create_facsta =\
+        """ CREATE TABLE IF NOT EXISTS FacStaff
+            (
+                cwid TEXT,
+                first TEXT,
+                middle TEXT,
+                last TEXT,
+                email TEXT,
+                phone TEXT,
+                received_date TEXT
+            );
+        """
+
     # 9 args fields
     insert_slate =\
         """ INSERT INTO Slate 
             (cwid, first, middle, last, raw_first, raw_middle, raw_last, raw_email, raw_username, received_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         """
 
     # 9 args fields
     insert_bb =\
         """ INSERT INTO Blackboard 
             (cwid, first, middle, last, raw_first, raw_middle, raw_last, received_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
         """
 
     # 6 args fields
     insert_jsa =\
         """ INSERT INTO JSA 
             (cwid, first, last, status, submit_date, received_date)
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?);
+        """
+    
+    # 7 args fields
+    insert_facsta =\
+        """ INSERT INTO FacStaff
+            (cwid, first, middle, last, email, phone, received_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?);
         """
 
     # 4 args fields
@@ -88,21 +108,27 @@ class Query:
             WHERE cwid = ?
         """
 
-    count_by_date_slate =\
+    summary_slate =\
         """ SELECT received_date, COUNT(*)
             FROM Slate
             GROUP BY received_date;
         """
 
-    count_by_date_bb =\
+    summary_bb =\
         """ SELECT received_date, COUNT(*)
             FROM Blackboard
             GROUP BY received_date;
         """
     
-    count_by_date_jsa =\
+    summary_jsa =\
         """ SELECT received_date, COUNT(*)
             FROM JSA
+            GROUP BY received_date;
+        """
+
+    summary_facsta =\
+        """ SELECT received_date, COUNT(*)
+            FROM FacStaff
             GROUP BY received_date;
         """
 
@@ -180,7 +206,6 @@ class Query:
             FROM Blackboard
         """
     
-    # TODO: below this line are not tested
     select_status_jsa =\
         """ SELECT jsa.cwid, jsa.first, jsa.last, jsa.received_date
         FROM JSA jsa
