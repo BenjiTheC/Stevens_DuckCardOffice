@@ -6,11 +6,6 @@ from datetime import datetime
 from read_file import file_reading_gen
 from QueryLib import Query
 
-TODAY = datetime.now().strftime('%y%m%d')
-DUCKCARD = os.path.join(os.pardir, 'DuckCard_data')
-DATABASE = os.path.join(os.curdir, 'duckcard.db')
-WRITE_TO = os.path.join(DUCKCARD, 'NerdyBen')
-
 """ The folders under directory 'NerdyBen' is consistent:
     - brn
     - con
@@ -145,14 +140,66 @@ class NerdyBen:
         """ Extract from JSA database for those who have been imported into the Blackboard but have not
             uploaded their photos yet.
         """
+        path_toremind_dir = os.path.join(self._writeto_dir, NerdyBen.to_remind_)
+        con_all = os.path.join(path_toremind_dir, f'con_all_{date}.csv')
+        con_curr_enrl = os.path.join(path_toremind_dir, f'con_enrolled_{date}.csv')
+        con_return = os.path.join(path_toremind_dir, f'con_returning_{date}.csv')
+        brn_no_photo = os.path.join(path_toremind_dir, f'brn_no_photo_{date}.csv')
+
+        connection = sqlite3.connect(self._database)
+        cursor = connection.cursor()
+
+        con_cwids = list()
+        if cursor.execute(Query.con_all).fetchone():
+            with open(con_all, 'w') as fwrite:
+                fwrite.write('CWID,First,Middle,Last,Stevens email,Personal email\n')
+
+                for cwid, first, middle, last, username, email in cursor.execute(Query.con_all):
+                    fwrite.write(f'{cwid},{first},{middle},{last},{username}@stevens.edu,{email}\n')
+                    con_cwids.append(cwid)
+
+        if cursor.execute(Query.con_currnt_enrll).fetchone():
+            with open(con_curr_enrl, 'w') as fwrite:
+                fwrite.write('CWID,First,Last,Stevens email,Personal email\n')
+
+                for cwid, first, last, stevens_e, personal_e in cursor.execute(Query.con_currnt_enrll):
+                    fwrite.write(f'{cwid},{first},{last},{stevens_e},{personal_e}\n')
+
+        if cursor.execute(Query.con_returning).fetchone():
+            with open(con_return, 'w') as fwrite:
+                fwrite.write('CWID,First,Middle,Last,Stevens email,Personal email\n')
+
+                for cwid, first, middle, last, username, email in cursor.execute(Query.con_returning):
+                    fwrite.write(f'{cwid},{first},{middle},{last},{username}@stevens.edu,{email}\n')
+
+        staf_cwids = list()
+        if cursor.execute(Query.staf_in_slate).fetchone():
+            for row in cursor.execute(Query.staf_in_slate):
+                staf_cwids.append(row[0])
+
+        if cursor.execute(Query.in_jsa_not_in_slate).fetchone():
+            with open(brn_no_photo, 'w') as fwrite:
+                fwrite.write('CWID,First,Middle,Last,Stevens email,Personal email\n')
+
+                for cwid, first, middle, last, username, email in cursor.execute(Query.in_jsa_not_in_slate):
+                    if cwid in con_cwids or cwid in staf_cwids:
+                        continue
+                    fwrite.write(f'{cwid},{first},{middle},{last},{username}@stevens.edu,{email}\n')
 
 def main():
     """ Test"""
+
+    TODAY = datetime.now().strftime('%y%m%d')
+    DUCKCARD = os.path.join(os.pardir, 'DuckCard_data')
+    DATABASE = os.path.join(DUCKCARD, 'duckcard_DB.db')
+    WRITE_TO = os.path.join(DUCKCARD, 'NerdyBen')
+
     benji = NerdyBen(DATABASE, WRITE_TO)
-    benji.error_prone_distinguish(date='181207')
+    #benji.error_prone_distinguish(date='181207')
     #benji.to_import(date='181217')
     #benji.doublecheck_imported(date='181108')
     #benji.to_print(date='181218')
+    benji.to_remind(date='181224')
 
 if __name__ == '__main__':
     main()
