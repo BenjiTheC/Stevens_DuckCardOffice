@@ -4,7 +4,7 @@ import os
 #import sqlite3
 from datetime import datetime
 import click
-from stevens_systems import JSA, Blackboard, Slate
+from stevens_systems import JSA, Blackboard, Slate, FacStaff, StudentInfo
 from nerdy_ben import NerdyBen
 
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
@@ -24,6 +24,8 @@ class Config:
         self.slate = os.path.join(Config.duckcard_data, 'Slate')
         self.bb = os.path.join(Config.duckcard_data, 'Blackboard')
         self.jsa = os.path.join(Config.duckcard_data, 'JSA')
+        self.sis = os.path.join(Config.duckcard_data, 'StudentInfo')
+        self.facsta = os.path.join(Config.duckcard_data, 'FacStaff')
         self.first_time = False
         self.write_to = os.path.join(Config.duckcard_data, 'NerdyBen')
         self.date = Config.today
@@ -79,10 +81,20 @@ def init(config, verbose):
     JSA(config.jsa, config.db).insert_data(first_time=config.first_time)
     click.echo('JSA database built')
 
+    click.echo('\nBuilding the Students 18F database...')
+    StudentInfo(config.sis, config.db).insert_data(first_time=config.first_time)
+    click.echo('Students 18F built')
+
+    click.echo('\nBuilding the FacStaff database...')
+    FacStaff(config.facsta, config.db).insert_data(first_time=config.first_time)
+    click.echo('FacStaff built')
+
     if verbose:
         Blackboard(config.bb, config.db).print_count()
         Slate(config.slate, config.db).print_count()
         JSA(config.jsa, config.db).print_count()
+        StudentInfo(config.sis, config.db).print_count()
+        FacStaff(config.facsta, config.db).print_count()
 
     click.echo('\nAll databases built.')
 
@@ -107,10 +119,22 @@ def update(config, verbose):
     except FileNotFoundError:
         click.echo('No data to update Slate')
 
+    try:
+        StudentInfo(config.sis, config.db).insert_data(date=config.date)
+    except FileNotFoundError:
+        click.echo('No data to update StudentInfo')
+
+    try:
+        FacStaff(config.facsta, config.db).insert_data(date=config.date)
+    except FileNotFoundError:
+        click.echo('No data to update FacStaff')
+
     if verbose:
         Blackboard(config.bb, config.db).print_count()
         Slate(config.slate, config.db).print_count()
         JSA(config.jsa, config.db).print_count()
+        StudentInfo(config.sis, config.db).print_count()
+        FacStaff(config.facsta, config.db).print_count()
 
 @duckcard.command()
 @click.argument('action')
@@ -150,3 +174,5 @@ def display(config):
     Blackboard(config.bb, config.db).print_count()
     Slate(config.slate, config.db).print_count()
     JSA(config.jsa, config.db).print_count()
+    StudentInfo(config.sis, config.db).print_count()
+    FacStaff(config.facsta, config.db).print_count()

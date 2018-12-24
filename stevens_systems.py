@@ -293,32 +293,85 @@ class FacStaff(System):
         
         connection.close()     
 
+class StudentInfo(System):
+    """ StudentInfo is responsible for recording all of the enrolled students for each semester"""
+
+    def __init__(self, source_dir, database, pattern=r'enrolled_18F_([\d]{6})\.csv'):
+        super().__init__(source_dir, database, pattern)
+        self.create_table()
+
+    def create_table(self):
+        """ Create the 18F enrolld students table."""
+        connection = sqlite3.connect(self._database)
+        connection.execute(Query.create_sis)
+        connection.commit()
+        connection.close()
+
+    def insert_one_file(self, file_path=None, db_connect=None, date=None):
+        """ Insert one specific file into table"""
+        if not db_connect:
+            raise ConnectionError('No connection of database provided!')
+        
+        cursor = db_connect.cursor()
+
+        for name, cwid, stevens_e, personal_e, non0, non1, exit_term, level, non2, non3 \
+            in nonpy_file_reading_gen(file_path, 10, header=True):
+            names = name.strip().split(',')
+            last = names[0].strip()
+            first = '' if len(names) <= 1 else ' '.join(names[1:])
+
+            data = (cwid, first, last, stevens_e, personal_e, exit_term, level, date)
+            cursor.execute(Query.insert_sis, data)
+        
+        db_connect.commit()
+
+    def print_count(self):
+        """ print the count group by date"""
+        connection = sqlite3.connect(self._database)
+        cursor = connection.cursor()
+
+        pp_lst = list()
+        for row in cursor.execute(Query.summary_sis):
+            pp_lst.append(row)
+
+        print('\nFacStaff information')
+        print(tabulate(pp_lst, headers=['level', 'count'], showindex='always', tablefmt='fancy_grid'))
+        
+        connection.close()       
+
+
 def main():
     """ for test"""
-    db = os.path.join(os.curdir, 'duckcard_test.db')  #os.path.join(DUCKCARD, 'duckcard.db')
-
+    
     TODAY = datetime.today().strftime('%y%m%d')
     DUCKCARD = os.path.join(os.pardir, 'DuckCard_data')
     SLATE = os.path.join(DUCKCARD, 'Slate')
     BLACKBOARD = os.path.join(DUCKCARD, 'Blackboard')
     JSA_ = os.path.join(DUCKCARD, 'JSA')
     FACSTAFF = os.path.join(DUCKCARD, 'FacStaff')
+    SIS = os.path.join(DUCKCARD, 'StudentInfo')
 
+    db = '' #os.path.join(DUCKCARD, 'duckcard_DB.db')  #os.path.join(DUCKCARD, 'duckcard.db')
+    
     sla = Slate(SLATE, db)
-    sla.insert_data(first_time=True)  # date=TODAY
+    #sla.insert_data(first_time=True)  # date=TODAY
     sla.print_count()
 
-    #bb = Blackboard(BLACKBOARD, db)
+    bb = Blackboard(BLACKBOARD, db)
     #bb.insert_data(date=TODAY)  # date=TODAY first_time=True
-    #bb.print_count()
+    bb.print_count()
 
     jsa = JSA(JSA_, db)
-    jsa.insert_data(first_time=True)  # date=TODAY
+    #jsa.insert_data(first_time=True)  # date=TODAY
     jsa.print_count()
 
     facsta = FacStaff(FACSTAFF, db)
-    facsta.insert_data(first_time=True)  # date=TODAY
+    #facsta.insert_data(first_time=True)  # date=TODAY
     facsta.print_count()
+
+    sis = StudentInfo(SIS, db)
+    #sis.insert_data(first_time=True) # date=TODAY
+    sis.print_count()
 
 if __name__ == '__main__':
     main()

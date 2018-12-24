@@ -61,6 +61,20 @@ class Query:
             );
         """
 
+    create_sis =\
+        """ CREATE TABLE IF NOT EXISTS Students_18F
+            (
+                cwid TEXT,
+                first TEXT,
+                last TEXT,
+                stevens_e TEXT,
+                personal_e TEXT,
+                exit_term TEXT,
+                level TEXT,
+                received_date TEXT
+            )
+        """
+
     # 9 args fields
     insert_slate =\
         """ INSERT INTO Slate 
@@ -87,6 +101,13 @@ class Query:
         """ INSERT INTO FacStaff
             (cwid, first, middle, last, email, phone, received_date)
             VALUES (?, ?, ?, ?, ?, ?, ?);
+        """
+
+    # 8 args fields
+    insert_sis =\
+        """ INSERT INTO Students_18F
+            (cwid, first, last, stevens_e, personal_e, exit_term, level, received_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """
 
     # 4 args fields
@@ -130,6 +151,12 @@ class Query:
         """ SELECT received_date, COUNT(*)
             FROM FacStaff
             GROUP BY received_date;
+        """
+
+    summary_sis =\
+        """ SELECT level, COUNT(*)
+            FROM Students_18F
+            GROUP BY level;
         """
 
     get_indb_bb =\
@@ -213,6 +240,53 @@ class Query:
           AND jsa.status = ?;
         """
 
+    con_currnt_enrll =\
+        """ SELECT DISTINCT sis.cwid, sis.first, sis.last, sis.stevens_e, sis.personal_e
+            FROM Students_18F sis 
+            INNER JOIN Slate sla 
+              ON sis.cwid = sla.cwid
+            INNER JOIN Blackboard bb 
+              ON sla.cwid = bb.cwid
+            WHERE bb.received_date = '181111'
+            ORDER BY sis.cwid;
+        """
+
+    con_returning =\
+        """ SELECT DISTINCT sla.cwid, sla.raw_first, sla.raw_middle, sla.raw_last, sla.raw_username, sla.raw_email
+            FROM Slate sla 
+            INNER JOIN Blackboard bb 
+              ON sla.cwid = bb.cwid
+            WHERE bb.received_date = '181111'
+              AND sla.cwid NOT IN (
+                SELECT sis.cwid
+                FROM Students_18F sis
+            ) ORDER BY sla.cwid;
+        """
+
+    con_all =\
+        """ SELECT DISTINCT sla.cwid, sla.raw_first, sla.raw_middle, sla.raw_last, sla.raw_username, sla.raw_email
+            FROM Slate sla 
+            JOIN Blackboard bb 
+              ON sla.cwid = bb.cwid 
+            WHERE bb.received_date = '181111';
+        """
+    
+    staf_in_slate =\
+        """ SELECT DISTINCT sla.cwid, sla.raw_first, sla.raw_middle, sla.raw_last, sla.raw_username, sla.raw_email
+            FROM Slate sla 
+            JOIN FacStaff fsta 
+              ON sla.cwid = fsta.cwid;
+        """
+
+    in_jsa_not_in_slate =\
+        """ SELECT DISTINCT sla.cwid, sla.raw_first, sla.raw_middle, sla.raw_last, sla.raw_username, sla.raw_email
+            FROM Slate sla 
+            WHERE sla.cwid NOT IN (
+              SELECT jsa.cwid 
+              FROM JSA jsa 
+            );
+        """
+    
 
 def main():
     """ Test"""
