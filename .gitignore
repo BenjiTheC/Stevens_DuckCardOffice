@@ -25,6 +25,7 @@ docs/_build/
 .coverage.*
 htmlcov/
 *.sql
+*.json
 
 # Automated ignore Python parts below
 

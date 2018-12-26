@@ -9,6 +9,7 @@ from tabulate import tabulate
 from QueryLib import Query
 from read_file import file_reading_gen, nonpy_file_reading_gen
 
+# TODO: moving all of the data files to ONE directory, using glob or scandir to get all of the data.
 
 def find_date(dir_path, date=None):
     """ find the file with the specific date in given dir"""
@@ -39,10 +40,16 @@ class System:
 
     def __init__(self, source_dir=None, database=None, pattern=r''):
         """ define the connection path of database, dir path for updating database"""
-        self._source_dir = source_dir
-        self._database = database
-        self._pattern = pattern
+        self.source_dir = source_dir
+        self.database = database
+        self.pattern = pattern
     
+    def __repr__(self):
+        return f'{self.__class__.__name__}(**{self.__dict__})'
+
+    def __str__(self):
+        return f'{self.__class__.__name__}'
+
     def create_table(self):
         """ Create table with proper query"""
 
@@ -62,23 +69,23 @@ class System:
         if first_time and date:
             raise TypeError("You can't do first_time and date at the same time!")
 
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
 
         if first_time:
             date_lst = list()
-            for the_file in os.listdir(self._source_dir):
-                reg = re.search(self._pattern, the_file)
+            for the_file in os.listdir(self.source_dir):
+                reg = re.search(self.pattern, the_file)
                 if reg:
                     date_lst.append(datetime.strptime(reg.group(1), '%y%m%d'))
 
             while date_lst:
                 date = date_lst.pop(date_lst.index(min(date_lst))).strftime('%y%m%d')  # pop the earliest date file
-                path = find_date(self._source_dir, date)
+                path = find_date(self.source_dir, date)
                 self.insert_one_file(path, connection, date)
                 date = None
 
         if date:
-            path = find_date(self._source_dir, date)
+            path = find_date(self.source_dir, date)
             self.insert_one_file(path, connection, date)
 
         connection.close()
@@ -99,7 +106,7 @@ class Slate(System):
         
     def create_table(self):
         """ create table Slate in database"""
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
         connection.execute(Query.create_slate)
         connection.commit()
         connection.close()
@@ -119,7 +126,7 @@ class Slate(System):
 
     def print_count(self):
         """ Print the count group by date"""
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
         cursor = connection.cursor()
 
         pp_lst = list()
@@ -142,7 +149,7 @@ class Blackboard(System):
         
     def create_table(self):
         """ create table Blackboard in database"""
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
         connection.execute(Query.create_bb)
         connection.commit()
         connection.close()
@@ -168,7 +175,7 @@ class Blackboard(System):
 
     def print_count(self):
         """ Print the count group by date"""
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
         cursor = connection.cursor()
 
         pp_lst = list()
@@ -193,7 +200,7 @@ class JSA(System):
 
     def create_table(self):
         """ create table JSA in database"""
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
         connection.execute(Query.create_jsa)
         connection.commit()
         connection.close()
@@ -230,7 +237,7 @@ class JSA(System):
 
     def print_count(self):
         """ print the count group by date"""
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
         cursor = connection.cursor()
 
         pp_lst = list()
@@ -253,7 +260,7 @@ class FacStaff(System):
 
     def create_table(self):
         """ Create a table FacStaff in database."""
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
         connection.execute(Query.create_facsta)
         connection.commit()
         connection.close()
@@ -281,7 +288,7 @@ class FacStaff(System):
 
     def print_count(self):
         """ print the count group by date"""
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
         cursor = connection.cursor()
 
         pp_lst = list()
@@ -302,7 +309,7 @@ class StudentInfo(System):
 
     def create_table(self):
         """ Create the 18F enrolld students table."""
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
         connection.execute(Query.create_sis)
         connection.commit()
         connection.close()
@@ -327,7 +334,7 @@ class StudentInfo(System):
 
     def print_count(self):
         """ print the count group by date"""
-        connection = sqlite3.connect(self._database)
+        connection = sqlite3.connect(self.database)
         cursor = connection.cursor()
 
         pp_lst = list()
@@ -351,27 +358,28 @@ def main():
     FACSTAFF = os.path.join(DUCKCARD, 'FacStaff')
     SIS = os.path.join(DUCKCARD, 'StudentInfo')
 
-    db = '' #os.path.join(DUCKCARD, 'duckcard_DB.db')  #os.path.join(DUCKCARD, 'duckcard.db')
+    db = os.path.join(DUCKCARD, 'duckcard_DB.db')  #os.path.join(DUCKCARD, 'duckcard.db')
     
     sla = Slate(SLATE, db)
     #sla.insert_data(first_time=True)  # date=TODAY
-    sla.print_count()
+    #sla.print_count()
 
     bb = Blackboard(BLACKBOARD, db)
     #bb.insert_data(date=TODAY)  # date=TODAY first_time=True
-    bb.print_count()
+    #bb.print_count()
 
     jsa = JSA(JSA_, db)
     #jsa.insert_data(first_time=True)  # date=TODAY
-    jsa.print_count()
+    #sa.print_count()
 
     facsta = FacStaff(FACSTAFF, db)
     #facsta.insert_data(first_time=True)  # date=TODAY
-    facsta.print_count()
+    #facsta.print_count()
 
     sis = StudentInfo(SIS, db)
     #sis.insert_data(first_time=True) # date=TODAY
     sis.print_count()
+    print("")
 
 if __name__ == '__main__':
     main()
