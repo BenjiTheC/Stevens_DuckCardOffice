@@ -86,7 +86,8 @@ def summary(cfg, tbls):
 @duckcard.command()
 @click.option('--verbose', '-v', is_flag=True, default=False,
               help='Display the counting detail of databases.')
-def init(verbose):
+@pass_config
+def init(cfg, verbose):
     """ Building the database for the first time, will take about five minutes"""
     if verbose:
         click.echo('verbose mode')

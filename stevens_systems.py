@@ -9,15 +9,15 @@ from tabulate import tabulate
 from QueryLib import Query
 from read_file import file_reading_gen, nonpy_file_reading_gen
 
-# TODO: moving all of the data files to ONE directory, using glob or scandir to get all of the data.
 
-def find_date(dir_path, date=None):
+def find_date(dir_path, date=None, pattern=r''):
     """ find the file with the specific date in given dir"""
     if not os.path.isdir(dir_path):
         raise OSError(f'{dir_path} is not a valid directory!')
 
     for path in os.listdir(dir_path):
-        if os.path.isfile(os.path.join(dir_path, path)) and date in path:
+        reg = re.search(pattern, path)
+        if reg and os.path.isfile(os.path.join(dir_path, path)) and date in path:
             return os.path.join(dir_path, path)
     # iteration over without return
     raise FileNotFoundError('There is no file received today!')
@@ -32,6 +32,17 @@ def get_status(status_string: str):  # TODO: the new status 'printed' to be adde
     for status in status_tup:
         if status in status_string:
             return status
+
+def my_glob(source_dir, pattern):
+    """ Given the directory path and pattern, find all of the file that fit the pattern in this directory."""
+    if os.path.isdir(source_dir):
+        with os.scandir(source_dir) as it:
+            for entry in it:
+                fname = entry.name
+                reg = re.search(pattern, fname)
+                if reg:
+                    yield os.path.abspath(os.path.join(source_dir, fname)), reg.group(1)
+
 
 class System:
     """ Super class for Slate, Blackboard, JSA.
@@ -72,20 +83,18 @@ class System:
         connection = sqlite3.connect(self.database)
 
         if first_time:
-            date_lst = list()
-            for the_file in os.listdir(self.source_dir):
-                reg = re.search(self.pattern, the_file)
-                if reg:
-                    date_lst.append(datetime.strptime(reg.group(1), '%y%m%d'))
+            date_dct = dict()
+            #date_lst = list()
+            for fpath, received_date in my_glob(self.source_dir, self.pattern):
+                date_dct[datetime.strptime(received_date, '%y%m%d')] = fpath
 
-            while date_lst:
-                date = date_lst.pop(date_lst.index(min(date_lst))).strftime('%y%m%d')  # pop the earliest date file
-                path = find_date(self.source_dir, date)
-                self.insert_one_file(path, connection, date)
-                date = None
+            #date_lst = sorted(date_dct.keys())
+
+            for dt in sorted(date_dct.keys()):
+                self.insert_one_file(date_dct[dt], connection, dt.strftime('%y%m%d'))
 
         if date:
-            path = find_date(self.source_dir, date)
+            path = find_date(self.source_dir, date, self.pattern)
             self.insert_one_file(path, connection, date)
 
         connection.close()
@@ -100,7 +109,7 @@ class Slate(System):
         Stevens and Slate generate a set of new Stevens ID for them.
     """
 
-    def __init__(self, source_dir=None, database=None, pattern=r'Export_([\d]{6}).*\.csv'):
+    def __init__(self, source_dir=None, database=None, pattern=r'sla_([\d]{6})\.csv'):
         super().__init__(source_dir, database, pattern)
         self.create_table()
         
@@ -143,7 +152,7 @@ class Blackboard(System):
         It's used to build the reference for comparsion of the newly admitted students.
     """
 
-    def __init__(self, source_dir=None, database=None, pattern=r'InCampusPersonnel_([\d]{6})\.csv'):
+    def __init__(self, source_dir=None, database=None, pattern=r'bb_([\d]{6})\.csv'):
         super().__init__(source_dir, database, pattern)
         self.create_table()
         
@@ -194,7 +203,7 @@ class JSA(System):
         One individual can have multiple records if he/she uploads more than one time.
     """
 
-    def __init__(self, source_dir=None, database=None, pattern=r'received_jsa_([\d]{6})\.csv'):
+    def __init__(self, source_dir=None, database=None, pattern=r'jsa_([\d]{6})\.csv'):
         super().__init__(source_dir, database, pattern)
         self.create_table()
 
@@ -254,7 +263,7 @@ class FacStaff(System):
         as when a faculty/staff is a student at the same time, we don't print a student ID card for him/her.
     """
 
-    def __init__(self, source_dir=None, database=None, pattern=r'fac_staff_([\d]{6})\.csv'):
+    def __init__(self, source_dir=None, database=None, pattern=r'facsta_([\d]{6})\.csv'):
         super().__init__(source_dir, database, pattern)
         self.create_table()
 
@@ -303,7 +312,7 @@ class FacStaff(System):
 class StudentInfo(System):
     """ StudentInfo is responsible for recording all of the enrolled students for each semester"""
 
-    def __init__(self, source_dir, database, pattern=r'enrolled_18F_([\d]{6})\.csv'):
+    def __init__(self, source_dir, database, pattern=r'sis_([\d]{6})\.csv'):
         super().__init__(source_dir, database, pattern)
         self.create_table()
 
@@ -352,32 +361,29 @@ def main():
     
     TODAY = datetime.today().strftime('%y%m%d')
     DUCKCARD = os.path.join(os.pardir, 'DuckCard_data')
-    SLATE = os.path.join(DUCKCARD, 'Slate')
-    BLACKBOARD = os.path.join(DUCKCARD, 'Blackboard')
-    JSA_ = os.path.join(DUCKCARD, 'JSA')
-    FACSTAFF = os.path.join(DUCKCARD, 'FacStaff')
-    SIS = os.path.join(DUCKCARD, 'StudentInfo')
 
-    db = os.path.join(DUCKCARD, 'duckcard_DB.db')  #os.path.join(DUCKCARD, 'duckcard.db')
-    
-    sla = Slate(SLATE, db)
-    #sla.insert_data(first_time=True)  # date=TODAY
-    #sla.print_count()
+    data_source = os.path.join(DUCKCARD, 'data_source')
+    #db = os.path.join(DUCKCARD, 'duckcard_DB.db')  
+    db = os.path.join(os.curdir, 'duckcard.db')  # for test and debug
 
-    bb = Blackboard(BLACKBOARD, db)
+    sla = Slate(data_source, db)
+    sla.insert_data(first_time=True)  # date=TODAY
+    sla.print_count()
+
+    bb = Blackboard(data_source, db)
     #bb.insert_data(date=TODAY)  # date=TODAY first_time=True
     #bb.print_count()
 
-    jsa = JSA(JSA_, db)
-    #jsa.insert_data(first_time=True)  # date=TODAY
-    #sa.print_count()
+    jsa = JSA(data_source, db)
+    jsa.insert_data(first_time=True)  # first_time=True
+    jsa.print_count()
 
-    facsta = FacStaff(FACSTAFF, db)
-    #facsta.insert_data(first_time=True)  # date=TODAY
-    #facsta.print_count()
+    facsta = FacStaff(data_source, db)
+    facsta.insert_data(first_time=True)  # date=TODAY
+    facsta.print_count()
 
-    sis = StudentInfo(SIS, db)
-    #sis.insert_data(first_time=True) # date=TODAY
+    sis = StudentInfo(data_source, db)
+    sis.insert_data(first_time=True) # date=TODAY
     sis.print_count()
     print("")
 
