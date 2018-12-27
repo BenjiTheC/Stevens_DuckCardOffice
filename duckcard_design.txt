@@ -4,12 +4,12 @@ duckcard is a command line interface designed for the program used to process re
 students' data. This documentation describes the commands group design of the CLI application.
 
 Initialize a database build
-    meta	Set the data source path and database path, store the setting in a .json file
-    init	First time building a database. By default builds all of the tables
+[x] meta	Set the data source path and database path, store the setting in a .json file
+[x] init	First time building a database. By default builds all of the tables
 
 Maintain and visulize database
-    update	Update the data of specific day of time spans
-    summary	Show the summary information of specific table or all of the tables by default
+[x] update	Update the data of specific day of time spans
+[x] summary	Show the summary information of specific table or all of the tables by default
     search	Support single keyword searching in the database. Limited only for basic SQL
 
 Extract and write the desired data to the files

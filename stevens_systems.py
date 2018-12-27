@@ -15,11 +15,12 @@ def find_date(dir_path, date=None, pattern=r''):
     if not os.path.isdir(dir_path):
         raise OSError(f'{dir_path} is not a valid directory!')
 
-    for path in os.listdir(dir_path):
-        reg = re.search(pattern, path)
-        if reg and os.path.isfile(os.path.join(dir_path, path)) and date in path:
-            return os.path.join(dir_path, path)
-    # iteration over without return
+    with os.scandir(dir_path) as it:
+        for fobj in it:
+            reg = re.search(pattern, fobj.name)
+            if reg and date == reg.group(1):
+                return os.path.abspath(os.path.join(dir_path, fobj.name))
+
     raise FileNotFoundError('There is no file received today!')
 
 def to_upper(s: str):
@@ -375,7 +376,7 @@ def main():
     #bb.print_count()
 
     jsa = JSA(data_source, db)
-    jsa.insert_data(first_time=True)  # first_time=True
+    jsa.insert_data(date=TODAY)  # first_time=True
     jsa.print_count()
 
     facsta = FacStaff(data_source, db)
