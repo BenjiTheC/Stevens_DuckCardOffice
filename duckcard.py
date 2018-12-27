@@ -25,7 +25,15 @@ class Config:
         else:
             with fread:
                 self.__dict__ = json.load(fread)
-            self.tbl_dct = {'bb': Blackboard, 'sla': Slate, 'jsa': JSA, 'facsta': FacStaff, 'sis': StudentInfo}
+            self.tbl_dct = {
+                'bb': Blackboard(self.data_source, self.database),
+                'sla': Slate(self.data_source, self.database),
+                'jsa': JSA(self.data_source, self.database),
+                'facsta': FacStaff(self.data_source, self.database),
+                'sis': StudentInfo(self.data_source, self.database)
+                }
+            self.write_to = os.path.join(os.path.abspath(os.path.join(self.data_source, os.pardir)), 'NerdyBen')
+            self.benji = NerdyBen(self.database, self.write_to)
 
 pass_config = click.make_pass_decorator(Config, ensure=True)
     
@@ -53,11 +61,11 @@ def duckcard():
         
         \b
         Extract and write the desired data to the files
-            silly	Distinguish error prone students
-            toimport	Get all students info that ready to be imported into Blackboard
-            toprint	Get all students who have their photos uploaded but ID cards not printed
-            remind	Get all students who are imported into the Blackboard but haven't uploaded their photos
-            check 	Check if our dear friends Kristen has or has not imported the data we send to her
+        [x] silly	Distinguish error prone students
+        [x] toimport	Get all students info that ready to be imported into Blackboard
+        [x] toprint	Get all students who have their photos uploaded but ID cards not printed
+        [x] remind	Get all students who are imported into the Blackboard but haven't uploaded their photos
+        [x] check 	Check if our dear friends Kristen has or has not imported the data we send to her
 
     """
 
@@ -68,7 +76,10 @@ def duckcard():
 def meta(data_source, database):
     """ Set the metadata for the CLI."""
 
-    meta_data = {'data_source': data_source, 'database': database}
+    meta_data = {
+        'data_source': os.path.abspath(data_source),
+        'database': os.path.abspath(database)
+        }
     existed_meta = dict()
     
     if os.path.isfile(os.path.join(os.curdir, 'meta_duckcard.json')):
@@ -98,12 +109,12 @@ def summary(cfg, tbls):
     """
     if 'all' in tbls or not tbls:  # either given a 'all' argument or no argument
         for tbl in cfg.tbl_dct.values():  # display summaries of all tables
-            tbl(cfg.data_source, cfg.database).print_count()
+            tbl.print_count()
 
     else:
         for ali in tbls: # ali for alias, key of dictionary
             if ali in cfg.tbl_dct:
-                cfg.tbl_dct[ali](cfg.data_source, cfg.database).print_count()
+                cfg.tbl_dct[ali].print_count()
             else:
                 click.echo(f'{ali} is not a table in the database.\nMore info in duckcard --help.')
                 exit()
@@ -119,7 +130,7 @@ def init(cfg, verbose, spc):
     """ Building the database for the first time, will take about five minutes"""
     if spc:
         if spc in cfg.tbl_dct:
-            t = cfg.tbl_dct[spc](cfg.data_source, cfg.database)
+            t = cfg.tbl_dct[spc]
             t.insert_data(first_time=True)  # initialize the specific table
             if verbose:
                 t.print_count()
@@ -128,10 +139,9 @@ def init(cfg, verbose, spc):
             exit()
     else:  # build all of the tables
         for tbl in cfg.tbl_dct.values():
-            t = tbl(cfg.data_source, cfg.database)
-            t.insert_data(first_time=True)
+            tbl.insert_data(first_time=True)
             if verbose:
-                t.print_count()
+                tbl.print_count()
 
 
 @duckcard.command()
@@ -148,7 +158,7 @@ def update(cfg, verbose, date, spc):
     """
     if spc:
         if spc in cfg.tbl_dct:
-            t = cfg.tbl_dct[spc](cfg.data_source, cfg.database)
+            t = cfg.tbl_dct[spc]
             try:
                 t.insert_data(date=date)
             except FileNotFoundError:
@@ -161,11 +171,59 @@ def update(cfg, verbose, date, spc):
             exit()
     else:
         for tbl in cfg.tbl_dct.values():
-            t = tbl(cfg.data_source, cfg.database)
             try:
-                t.insert_data(date=date)
+                tbl.insert_data(date=date)
             except FileNotFoundError:
                 click.echo(f'No file to update {spc} on {date if date != TODAY else "today"}!')
                 continue
             if verbose:
-                t.print_count()
+                tbl.print_count()
+
+@duckcard.command()
+#TODO: verbose mode
+@click.argument('date', default=TODAY, required=False)
+@pass_config
+def silly(cfg, date):
+    """ Distinguish the error prone student information."""
+    cfg.benji.error_prone_distinguish(date=date)
+
+@duckcard.command()
+#TODO: verbose mode
+@click.argument('date', default=TODAY, required=False)
+@pass_config
+def toimport(cfg, date):
+    """ Get all students ready to be imported into Blackboard."""
+    cfg.benji.to_import(date=date)
+
+@duckcard.command()
+#TODO: verbose mode
+@click.argument('date', default=TODAY, required=False)
+@pass_config
+def toprint(cfg, date):
+    """ Get all studens who have uploaded theri photos and not printed."""
+    cfg.benji.to_print(date=date)
+
+@duckcard.command()
+#TODO: verbose mode
+@click.argument('date', default=TODAY, required=False)
+@pass_config
+def remind(cfg, date):
+    """ Get all list for mail merge to remind them about DuckCard."""
+    cfg.benji.to_remind(date=date)
+
+@duckcard.command()
+#TODO: verbose mode
+@click.argument('date', default=TODAY, required=False)
+@pass_config
+def check(cfg, date):
+    """ Check if Kristen has imported the data we send to her."""
+    cfg.benji.doublecheck_imported(date=date)
+
+
+def main():
+    test = Config()
+    print(test.write_to)
+    print('')
+
+if __name__ == '__main__':
+    main()
