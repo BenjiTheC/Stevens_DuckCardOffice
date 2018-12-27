@@ -66,6 +66,17 @@ def nonpy_file_reading_gen(path, fields, sep=',', header=False):
 
                 yield tuple(res)
 
+def get_one_column(file_path, fields, col, sep=',', header=True):
+    """ Only get one specific column in a .csv file, col starts from 0.""" 
+    if fields <= col:
+        raise IndexError(f'The file {file_path} only has {fields} fields but you are asking for {col + 1}th column!')
+
+    res = list()
+    for row in file_reading_gen(file_path, fields, sep, header):
+        res.append(row[col])
+
+    return res
+
 def main():
     """ Entrance"""
     #test_path = '/Users/benjamin/Documents/Campus_Card_Office/DuckCard_data/receivedExcel/Employee_list_for_Card_Office_review_20180727.csv'
