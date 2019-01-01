@@ -7,6 +7,7 @@ from datetime import datetime
 import click
 from stevens_systems import JSA, Blackboard, Slate, FacStaff, StudentInfo
 from nerdy_ben import NerdyBen
+from protective_case import entrance
 
 TODAY = datetime.today().strftime('%y%m%d')
 
@@ -67,6 +68,9 @@ def duckcard():
         [x] remind	Get all students who are imported into the Blackboard but haven't uploaded their photos
         [x] check 	Check if our dear friends Kristen has or has not imported the data we send to her
 
+        \b
+        Recording issued protective case
+            case    Protective case issue recording.
     """
 
 
@@ -219,8 +223,18 @@ def check(cfg, date):
     """ Check if Kristen has imported the data we send to her."""
     cfg.benji.doublecheck_imported(date=date)
 
+@duckcard.command()
+@click.argument('write_to', required=False)
+@pass_config
+def case(cfg, write_to):
+    """ Protective case issue recording."""
+    if not write_to:
+        write_to = os.path.join(cfg.write_to, 'protective_cases_issued.csv')
+
+    entrance(write_to)
 
 def main():
+    """ entrance"""
     test = Config()
     print(test.write_to)
     print('')
