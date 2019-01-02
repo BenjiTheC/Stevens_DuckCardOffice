@@ -183,6 +183,7 @@ def update(cfg, verbose, date, spc):
             if verbose:
                 tbl.print_count()
 
+
 @duckcard.command()
 #TODO: verbose mode
 @click.argument('date', default=TODAY, required=False)
@@ -190,6 +191,7 @@ def update(cfg, verbose, date, spc):
 def silly(cfg, date):
     """ Distinguish the error prone student information."""
     cfg.benji.error_prone_distinguish(date=date)
+
 
 @duckcard.command()
 #TODO: verbose mode
@@ -199,6 +201,7 @@ def toimport(cfg, date):
     """ Get all students ready to be imported into Blackboard."""
     cfg.benji.to_import(date=date)
 
+
 @duckcard.command()
 #TODO: verbose mode
 @click.argument('date', default=TODAY, required=False)
@@ -206,6 +209,7 @@ def toimport(cfg, date):
 def toprint(cfg, date):
     """ Get all studens who have uploaded theri photos and not printed."""
     cfg.benji.to_print(date=date)
+
 
 @duckcard.command()
 #TODO: verbose mode
@@ -215,6 +219,7 @@ def remind(cfg, date):
     """ Get all list for mail merge to remind them about DuckCard."""
     cfg.benji.to_remind(date=date)
 
+
 @duckcard.command()
 #TODO: verbose mode
 @click.argument('date', default=TODAY, required=False)
@@ -222,6 +227,7 @@ def remind(cfg, date):
 def check(cfg, date):
     """ Check if Kristen has imported the data we send to her."""
     cfg.benji.doublecheck_imported(date=date)
+
 
 @duckcard.command()
 @click.argument('write_to', required=False)
@@ -232,6 +238,7 @@ def case(cfg, write_to):
         write_to = os.path.join(cfg.write_to, 'protective_cases_issued.csv')
 
     entrance(write_to)
+
 
 def main():
     """ entrance"""
