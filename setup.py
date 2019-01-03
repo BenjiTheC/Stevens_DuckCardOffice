@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='DuckCard',
-    version='1.0',
+    version='2.0',
     py_modules=['duckcard'],
     include_package_data=True,
     install_requires=[
