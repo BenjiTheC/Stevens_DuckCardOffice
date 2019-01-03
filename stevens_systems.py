@@ -364,14 +364,14 @@ def main():
     DUCKCARD = os.path.join(os.pardir, 'DuckCard_data')
 
     data_source = os.path.join(DUCKCARD, 'data_source')
-    #db = os.path.join(DUCKCARD, 'duckcard_DB.db')  
-    db = os.path.join(os.curdir, 'duckcard.db')  # for test and debug
+    db = os.path.join(DUCKCARD, 'duckcard_DB.db')  
+    #db = os.path.join(os.curdir, 'duckcard.db')  # for test and debug
 
-    sla = Slate(data_source, db)
-    sla.insert_data(first_time=True)  # date=TODAY
-    sla.print_count()
+    #sla = Slate(data_source, db)
+    #sla.insert_data(first_time=True)  # date=TODAY
+    #sla.print_count()
 
-    bb = Blackboard(data_source, db)
+    #bb = Blackboard(data_source, db)
     #bb.insert_data(date=TODAY)  # date=TODAY first_time=True
     #bb.print_count()
 
@@ -379,13 +379,13 @@ def main():
     jsa.insert_data(date=TODAY)  # first_time=True
     jsa.print_count()
 
-    facsta = FacStaff(data_source, db)
-    facsta.insert_data(first_time=True)  # date=TODAY
-    facsta.print_count()
+    #facsta = FacStaff(data_source, db)
+    #facsta.insert_data(first_time=True)  # date=TODAY
+    #facsta.print_count()
 
-    sis = StudentInfo(data_source, db)
-    sis.insert_data(first_time=True) # date=TODAY
-    sis.print_count()
+    #sis = StudentInfo(data_source, db)
+    #sis.insert_data(first_time=True) # date=TODAY
+    #sis.print_count()
     print("")
 
 if __name__ == '__main__':
