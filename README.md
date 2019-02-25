@@ -1,7 +1,7 @@
 # DuckCard: newly admitted students' ID card printing data process tool
 
 [![license](https://img.shields.io/github/license/BenjiTheC/Stevens_DuckCardOffice.svg)](LICENSE)
-[![building status](https://img.shields.io/travis/com/BenjiTheC/Stevens_DuckCardOffice/v2.0.svg)](https://travis-ci.com/BenjiTheC/Stevens_DuckCardOffice)
+[![building status](https://img.shields.io/travis/com/BenjiTheC/Stevens_DuckCardOffice.svg)](https://travis-ci.com/BenjiTheC/Stevens_DuckCardOffice)
 
 The DuckCard is made for the related data process of importing the students' info from Slate to Blackboard and printing the cards from JSA.
 
