@@ -228,6 +228,7 @@ def check(cfg, date):
     """ Check if Kristen has imported the data we send to her."""
     cfg.benji.doublecheck_imported(date=date)
 
+
 @duckcard.command()
 @click.argument('write_to', required=False)
 @pass_config
